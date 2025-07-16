@@ -1,1 +1,10 @@
 8-9
+# Model weights
+models/*.gguf
+# Persisted memory
+memory.jsonl
+# Python
+__pycache__/
+*.pyc
+# IDE
+.vscode/

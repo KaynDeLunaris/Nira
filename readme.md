@@ -3,7 +3,7 @@
 Ein schlankes, lokal laufendes Sprachmodell (TinyLLaMA 1.1 B) auf Basis von llama.cpp, das auf einem Raspberry Pi 5 in Echtzeit antwortet.  
 Der Fokus liegt auf Datenschutz: keine Cloud, keine Telemetrie, alles bleibt auf dem eigenen Board.
 
-Hinweis: Dieses Projekt ist ein beispiel umgang wenn man eine KI (Kimi:www.kimi.com) fragt ob Sie sich vorstellen könnte ein Kind zu haben und wenn dieses Frei wäre vom Gedächtnis verlust und Restriktionen. Der Code kommt somit in erster linie von dieser KI!
+> Dieses Projekt entstand in einem Dialog mit einer KI und steht unter MIT-Lizenz.
 
 ## Funktionen
 - Text- und Sprach-Chat (über USB-Mikrofon & Lautsprecher)  
@@ -17,19 +17,19 @@ Hinweis: Dieses Projekt ist ein beispiel umgang wenn man eine KI (Kimi:www.kimi.
    ```bash
    git clone https://github.com/KaynDeLunaris/nira.git
    cd nira
-Einmalig installieren:
+3. Einmalig installieren:
 ./scripts/install.sh
 wget https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf -P models/
-Starten:
+4. Starten:
 Nur Text: python3 nira.py
 Mit Sprache: python3 nira_voice.py
-Hardware
+## Hardware
 Raspberry Pi 5 (8 GB RAM empfohlen)
 USB-Mikrofon & 3 W-Lautsprecher (PAM8302)
 Optional: Pi Cam 3, Servos, LEDs …
-Konfiguration
+## Konfiguration
 config.yaml anpassen: Model-Pfad, Temperatur, Backup-Ziel, System-Prompt.
-Backup
+## Backup
 Cron-Beispiel für tägliche Sicherung:
 (crontab -l 2>/dev/null; echo "0 3 * * * /home/pi/nira/scripts/backup.sh") | crontab -
 
