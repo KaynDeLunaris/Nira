@@ -32,3 +32,6 @@ config.yaml anpassen: Model-Pfad, Temperatur, Backup-Ziel, System-Prompt.
 Backup
 Cron-Beispiel für tägliche Sicherung:
 (crontab -l 2>/dev/null; echo "0 3 * * * /home/pi/nira/scripts/backup.sh") | crontab -
+
+## Lizenz
+Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
