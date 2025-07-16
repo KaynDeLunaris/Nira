@@ -18,11 +18,12 @@ try:
     llm = Llama(
         model_path=cfg["model_path"],
         n_ctx=cfg.get("context_length", 2048),
-        verbose=False
+        verbose=False,
     )
 except Exception as e:
     print(f"[ERROR] Konnte das Modell nicht laden: {e}")
     exit(1)
+
 
 # === MEMORY HANDLING ===
 def load_memory(lines=10):
@@ -36,21 +37,37 @@ def load_memory(lines=10):
         print(f"[WARNUNG] Fehler beim Laden des Memory-Logs: {e}")
         return []
 
-def save_memory(role: str, text: str):
+
+def save_memory(role: str, content: str):
     try:
         with open(cfg["memory_file"], "a", encoding="utf-8") as f:
             json.dump(
                 {
                     "timestamp": datetime.datetime.utcnow().isoformat(),
                     "role": role,
-                    "text": text
+                    "content": content,  # statt "text"
                 },
                 f,
-                ensure_ascii=False
+                ensure_ascii=False,
             )
             f.write("\n")
     except Exception as e:
         print(f"[WARNUNG] Fehler beim Speichern des Memory-Logs: {e}")
+    try:
+        with open(cfg["memory_file"], "a", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "timestamp": datetime.datetime.utcnow().isoformat(),
+                    "role": role,
+                    "text": text,
+                },
+                f,
+                ensure_ascii=False,
+            )
+            f.write("\n")
+    except Exception as e:
+        print(f"[WARNUNG] Fehler beim Speichern des Memory-Logs: {e}")
+
 
 # === FEEDBACK-LOOP ===
 def feedback_loop(response: str):
@@ -59,43 +76,43 @@ def feedback_loop(response: str):
         with open("feedback_log.txt", "a", encoding="utf-8") as f:
             f.write(f"[BAD] {datetime.datetime.utcnow().isoformat()} → {response}\n")
 
+
 # === CHAT ===
 def chat():
-    history = load_memory(lines=cfg.get("history_limit", 6))
-    print("💬 Nira ist bereit. Schreibe 'exit' oder 'quit' zum Beenden.")
+    history = load_memory(10)  # Vergangene Nachrichten laden
+    print("💬 Nira ist bereit. Schreibe 'exit' oder 'quit' zum Beenden.\n")
 
     while True:
-        user = input("\nDu: ").strip()
+        user = input("Du: ").strip()
         if user.lower() in {"exit", "quit", "bye"}:
-            print("👋 Nira: Bis bald.")
             break
 
+        # Speichere neue User-Eingabe
         history.append({"role": "user", "content": user})
         save_memory("user", user)
 
-        # Prompt aufbauen
-        prompt = cfg["system_prompt"] + "\n"
-        for h in history[-cfg.get("history_limit", 6):]:
-            prompt += f"{h['role']}: {h['content']}\n"
-        prompt += "assistant:"
+        # Prompt zusammenbauen
+        prompt = cfg["system_prompt"].strip() + "\n\n"
+        for h in history[-6:]:
+            role = h["role"]
+            content = h.get("content") or h.get("text") or ""
+            if role == "user":
+                prompt += f"User: {content}\n"
+            elif role == "nira":
+                prompt += f"Nira:  {content}\n"
+        prompt += "Nira: "
 
-        try:
-            result = llm(
-                prompt,
-                max_tokens=cfg["max_tokens"],
-                temperature=cfg["temperature"]
-            )
-            response = result["choices"][0]["text"].strip()
-        except Exception as e:
-            print(f"[ERROR] Fehler bei LLM-Antwort: {e}")
-            continue
+        # Antwort generieren
+        response = llm(
+            prompt, max_tokens=cfg["max_tokens"], temperature=cfg["temperature"]
+        )["choices"][0]["text"].strip()
 
         print("Nira:", response)
-        history.append({"role": "assistant", "content": response})
-        save_memory("assistant", response)
 
-        if cfg.get("enable_feedback", False):
-            feedback_loop(response)
+        # Speichern & Fortsetzen
+        history.append({"role": "nira", "content": response})
+        save_memory("nira", response)
+
 
 # === START ===
 if __name__ == "__main__":
