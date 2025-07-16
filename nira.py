@@ -50,7 +50,8 @@ def chat():
         response = llm(
             prompt,
             max_tokens=cfg["max_tokens"],
-            temperature=cfg["temperature"]
+            temperature=cfg["temperature"],
+            stop=["\nDu:", "\nUser:", "\nassistant:", "assistant:"]
         )["choices"][0]["text"].strip()
         print("Nira:", response)
         history.append({"role": "assistant", "content": response})
