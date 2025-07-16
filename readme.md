@@ -15,7 +15,7 @@ Hinweis: Dieses Projekt ist ein beispiel umgang wenn man eine KI (Kimi:www.kimi.
 1. Raspberry Pi OS Lite (64-bit) auf SD-Karte flashen.  
 2. Repo klonen und ins Verzeichnis wechseln:  
    ```bash
-   git clone https://github.com/<DEIN_USERNAME>/nira.git
+   git clone https://github.com/KaynDeLunaris/nira.git
    cd nira
 Einmalig installieren:
 ./scripts/install.sh
