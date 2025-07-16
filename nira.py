@@ -59,7 +59,7 @@ def save_memory(role: str, content: str):
                 {
                     "timestamp": datetime.datetime.utcnow().isoformat(),
                     "role": role,
-                    "text": text,
+                    "content": content,
                 },
                 f,
                 ensure_ascii=False,
@@ -95,7 +95,7 @@ def chat():
         prompt = cfg["system_prompt"].strip() + "\n\n"
         for h in history[-6:]:
             role = h["role"]
-            content = h.get("content") or h.get("text") or ""
+            content = h.get("content") or ""
             if role == "user":
                 prompt += f"User: {content}\n"
             elif role == "nira":
@@ -105,7 +105,7 @@ def chat():
         # Antwort generieren
         response = llm(
             prompt, max_tokens=cfg["max_tokens"], temperature=cfg["temperature"]
-        )["choices"][0]["text"].strip()
+        )["choices"][0]["content"].strip()
 
         print("Nira:", response)
 
