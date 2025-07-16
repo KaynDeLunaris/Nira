@@ -1,10 +1,10 @@
 #!/bin/bash
 BACKUP_DIR="/home/pi/nira_backups"
-mkdir -p 
-BACKUP 
+mkdir -p
+BACKUP
 D
 ​
- IRcpmemory.jsonl"
+IRcpmemory.jsonl"
 BACKUP_DIR/memory_$(date +%F_%H-%M-%S).jsonl"
 Optional: rsync zu externem NAS
 rsync -avz $BACKUP_DIR user@nas:/backups/nira/
