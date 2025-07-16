@@ -53,21 +53,6 @@ def save_memory(role: str, content: str):
             f.write("\n")
     except Exception as e:
         print(f"[WARNUNG] Fehler beim Speichern des Memory-Logs: {e}")
-    try:
-        with open(cfg["memory_file"], "a", encoding="utf-8") as f:
-            json.dump(
-                {
-                    "timestamp": datetime.datetime.utcnow().isoformat(),
-                    "role": role,
-                    "content": content,
-                },
-                f,
-                ensure_ascii=False,
-            )
-            f.write("\n")
-    except Exception as e:
-        print(f"[WARNUNG] Fehler beim Speichern des Memory-Logs: {e}")
-
 
 # === FEEDBACK-LOOP ===
 def feedback_loop(response: str):
@@ -105,7 +90,7 @@ def chat():
         # Antwort generieren
         response = llm(
             prompt, max_tokens=cfg["max_tokens"], temperature=cfg["temperature"]
-        )["choices"][0]["content"].strip()
+        )["choices"][0]["text"].strip()
 
         print("Nira:", response)
 
