@@ -86,15 +86,18 @@ def chat():
         save_memory("user", user, used=False)
         history.append({"timestamp": datetime.datetime.utcnow().isoformat(), "role": "user", "content": user, "used": False})
 
-        # Trenne schon beantwortete (used=True) und neue User-Nachrichten (used=False)
+        # Trenne schon beantwortete (used=True) Nachrichten (egal Rolle)
         answered_msgs = [h for h in history if h.get("used", False)]
+
+        # Neue User-Nachrichten (used=False)
         new_user_msgs = [h for h in history if h["role"] == "user" and not h.get("used", False)]
 
+        # Wichtig: Neue Nira-Nachrichten mit used=False NICHT in Prompt aufnehmen
+
         # Prompt zusammenbauen:
-        # 1. alle bereits beantworteten Nachrichten (user + nira)
-        # 2. alle neuen User-Nachrichten
         prompt = cfg["system_prompt"].strip() + "\n\n"
 
+        # 1. alle bereits beantworteten Nachrichten (user + nira, used=True)
         for h in answered_msgs:
             role = h["role"]
             content = h.get("content") or ""
@@ -103,6 +106,7 @@ def chat():
             elif role == "nira":
                 prompt += f"Nira: {content}\n"
 
+        # 2. alle neuen User-Nachrichten (used=False)
         for h in new_user_msgs:
             prompt += f"User: {h['content']}\n"
 
@@ -115,7 +119,7 @@ def chat():
 
         print("Nira:", response)
 
-        # Neue Nira-Antwort speichern (used=False, da noch nicht beantwortet)
+        # Neue Nira-Antwort speichern (used=False, noch nicht als verwendet markiert)
         save_memory("nira", response, used=False)
         history.append({"timestamp": datetime.datetime.utcnow().isoformat(), "role": "nira", "content": response, "used": False})
 
@@ -124,13 +128,12 @@ def chat():
             if entry in new_user_msgs:
                 entry["used"] = True
 
-        # Alle bisher unbenutzten Nira-Antworten auf used=True setzen (damit sie auch im Kontext landen)
-        # Optional: hier nur letzte Nira-Antwort? Sonst alle
+        # Alle bisher unbenutzten Nira-Antworten auf used=True setzen (damit sie im Kontext landen)
         for entry in history:
             if entry["role"] == "nira" and not entry.get("used", False):
                 entry["used"] = True
 
-        # Memory-Log komplett neu schreiben mit updated Status
+        # Memory-Log komplett neu schreiben mit aktualisiertem Status
         rewrite_memory(history)
 
 # === START ===
