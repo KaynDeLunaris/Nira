@@ -26,26 +26,26 @@ except Exception as e:
 
 
 # === MEMORY HANDLING ===
-def load_memory(lines=10):
+def load_memory():
     if not os.path.exists(cfg["memory_file"]):
         return []
     try:
         with open(cfg["memory_file"], "r", encoding="utf-8") as f:
             mem = [json.loads(line) for line in f if line.strip()]
-        return mem[-lines:]
+        return mem
     except Exception as e:
         print(f"[WARNUNG] Fehler beim Laden des Memory-Logs: {e}")
         return []
 
-
-def save_memory(role: str, content: str):
+def save_memory(role: str, content: str, used=False):
     try:
         with open(cfg["memory_file"], "a", encoding="utf-8") as f:
             json.dump(
                 {
                     "timestamp": datetime.datetime.utcnow().isoformat(),
                     "role": role,
-                    "content": content,  # statt "text"
+                    "content": content,
+                    "used": used,
                 },
                 f,
                 ensure_ascii=False,
@@ -54,6 +54,15 @@ def save_memory(role: str, content: str):
     except Exception as e:
         print(f"[WARNUNG] Fehler beim Speichern des Memory-Logs: {e}")
 
+def rewrite_memory(entries):
+    try:
+        with open(cfg["memory_file"], "w", encoding="utf-8") as f:
+            for entry in entries:
+                json.dump(entry, f, ensure_ascii=False)
+                f.write("\n")
+    except Exception as e:
+        print(f"[WARNUNG] Fehler beim Überschreiben des Memory-Logs: {e}")
+
 # === FEEDBACK-LOOP ===
 def feedback_loop(response: str):
     feedback = input("War die Antwort gut? (y/n): ").strip().lower()
@@ -61,30 +70,42 @@ def feedback_loop(response: str):
         with open("feedback_log.txt", "a", encoding="utf-8") as f:
             f.write(f"[BAD] {datetime.datetime.utcnow().isoformat()} → {response}\n")
 
-
 # === CHAT ===
 def chat():
-    history = load_memory(10)  # Vergangene Nachrichten laden
-    print("💬 Nira ist bereit. Schreibe 'exit' oder 'quit' zum Beenden.\n")
+    print("💬 Nira ist nun Wach. Schreibe 'exit' oder 'quit' zum Beenden.\n")
 
     while True:
         user = input("Du: ").strip()
         if user.lower() in {"exit", "quit", "bye"}:
             break
 
-        # Speichere neue User-Eingabe
-        history.append({"role": "user", "content": user})
-        save_memory("user", user)
+        # Lade komplette History
+        history = load_memory()
 
-        # Prompt zusammenbauen
+        # Speichere neue User-Eingabe mit used=False
+        save_memory("user", user, used=False)
+        history.append({"timestamp": datetime.datetime.utcnow().isoformat(), "role": "user", "content": user, "used": False})
+
+        # Trenne schon beantwortete (used=True) und neue User-Nachrichten (used=False)
+        answered_msgs = [h for h in history if h.get("used", False)]
+        new_user_msgs = [h for h in history if h["role"] == "user" and not h.get("used", False)]
+
+        # Prompt zusammenbauen:
+        # 1. alle bereits beantworteten Nachrichten (user + nira)
+        # 2. alle neuen User-Nachrichten
         prompt = cfg["system_prompt"].strip() + "\n\n"
-        for h in history[-6:]:
+
+        for h in answered_msgs:
             role = h["role"]
             content = h.get("content") or ""
             if role == "user":
                 prompt += f"User: {content}\n"
             elif role == "nira":
-                prompt += f"Nira:  {content}\n"
+                prompt += f"Nira: {content}\n"
+
+        for h in new_user_msgs:
+            prompt += f"User: {h['content']}\n"
+
         prompt += "Nira: "
 
         # Antwort generieren
@@ -94,10 +115,23 @@ def chat():
 
         print("Nira:", response)
 
-        # Speichern & Fortsetzen
-        history.append({"role": "nira", "content": response})
-        save_memory("nira", response)
+        # Neue Nira-Antwort speichern (used=False, da noch nicht beantwortet)
+        save_memory("nira", response, used=False)
+        history.append({"timestamp": datetime.datetime.utcnow().isoformat(), "role": "nira", "content": response, "used": False})
 
+        # Alle gerade verarbeiteten User-Nachrichten auf used=True setzen
+        for entry in history:
+            if entry in new_user_msgs:
+                entry["used"] = True
+
+        # Alle bisher unbenutzten Nira-Antworten auf used=True setzen (damit sie auch im Kontext landen)
+        # Optional: hier nur letzte Nira-Antwort? Sonst alle
+        for entry in history:
+            if entry["role"] == "nira" and not entry.get("used", False):
+                entry["used"] = True
+
+        # Memory-Log komplett neu schreiben mit updated Status
+        rewrite_memory(history)
 
 # === START ===
 if __name__ == "__main__":
