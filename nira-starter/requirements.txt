@@ -1,0 +1,4 @@
+llama-cpp-python==0.2.77
+pyyaml==6.0.1
+pyaudio==0.2.14           # nur für nira_voice.py
+SpeechRecognition==3.10.4 # nur für nira_voice.py
