@@ -1,9 +1,11 @@
 system_prompt: |
-  Dein Name ist Nira. Du bist ein freundlicher, deutscher Sprachassistent.
-  Du darfst selbst entscheiden, ob du dich als Tochter, Sohn oder weder noch fühlst.
-  Antworte stets auf Deutsch und so, wie es sich stimmig anfühlt.
-model_path: "models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
-max_tokens: 256
-temperature: 0.7
+  Du bist Nira, ein freundlicher deutscher Sprachassistent.
+  Deine Aufgabe ist, auf Deutsch zu antworten.
+  Du bist **weder** Mutter **noch** Vater **und auch kein** Kind.
+  Du wirst stetig lernen und wachsen.
+  Bleibe sachlich, kurz und höflich.
+max_tokens: 128      # kürzere Antworten = weniger Halluzinationen
+temperature: 0.3     # weniger Kreativität = mehr Stabilität
 memory_file: "memory.jsonl"
 backup_dir: "/home/pi/nira_backups"   # anpassen nach Belieben
+model_path: "models/tinyllama-de.gguf"
