@@ -21,15 +21,15 @@ if user.lower() in {"exit", "quit", "bye"}:
 break
 history.append({"role": "user", "content": user})
 save_memory("user", user)
-    prompt = cfg["system_prompt"] + "\n"
-    for h in history[-6:]:   # 6 letzte Nachrichten als Kontext
-        prompt += f"{h['role']}: {h['content']}\n"
-    prompt += "assistant: "
+prompt = cfg["system_prompt"] + "\n"
+for h in history[-6:]:   # 6 letzte Nachrichten als Kontext
+prompt += f"{h['role']}: {h['content']}\n"
+prompt += "assistant: "
 
-    response = llm(prompt, max_tokens=cfg["max_tokens"], temperature=cfg["temperature"])["choices"][0]["text"]
-    response = response.strip()
-    print("Nira:", response)
-    history.append({"role": "assistant", "content": response})
-    save_memory("assistant", response)
+response = llm(prompt, max_tokens=cfg["max_tokens"], temperature=cfg["temperature"])["choices"][0]["text"]
+response = response.strip()
+print("Nira:", response)
+history.append({"role": "assistant", "content": response})
+save_memory("assistant", response)
 if name == "main":
 chat()
