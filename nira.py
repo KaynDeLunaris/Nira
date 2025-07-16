@@ -84,6 +84,68 @@ def chat():
 
         # Speichere neue User-Eingabe mit used=False
         save_memory("user", user, used=False)
+        history.append({
+            "timestamp": datetime.datetime.utcnow().isoformat(),
+            "role": "user",
+            "content": user,
+            "used": False
+        })
+
+        # Trenne schon beantwortete (used=True) und neue User-Nachrichten (used=False)
+        answered_msgs = [h for h in history if h.get("used", False)]
+        new_user_msgs = [h for h in history if h["role"] == "user" and not h.get("used", False)]
+
+        # Prompt zusammenbauen:
+        prompt = cfg["system_prompt"].strip() + "\n\n"
+
+        for h in answered_msgs:
+            role = h["role"]
+            content = h.get("content") or ""
+            if role == "user":
+                prompt += f"User: {content}\n"
+            elif role == "nira":
+                prompt += f"Nira: {content}\n"
+
+        for h in new_user_msgs:
+            prompt += f"User: {h['content']}\n"
+
+        prompt += "Nira: "
+
+        # Antwort generieren
+        response = llm(
+            prompt, max_tokens=cfg["max_tokens"], temperature=cfg["temperature"]
+        )["choices"][0]["text"].strip()
+
+        print("Nira:", response)
+
+        # Neue Nira-Antwort speichern (initial used=False)
+        save_memory("nira", response, used=False)
+        history.append({
+            "timestamp": datetime.datetime.utcnow().isoformat(),
+            "role": "nira",
+            "content": response,
+            "used": False
+        })
+
+        # Direkt alle neuen User- und Nira-Nachrichten auf used=True setzen
+        for entry in history:
+            if (entry["role"] == "user" or entry["role"] == "nira") and not entry.get("used", False):
+                entry["used"] = True
+
+        # Memory-Log komplett neu schreiben mit updated Status
+        rewrite_memory(history)
+    print("💬 Nira ist nun Wach. Schreibe 'exit' oder 'quit' zum Beenden.\n")
+
+    while True:
+        user = input("Du: ").strip()
+        if user.lower() in {"exit", "quit", "bye"}:
+            break
+
+        # Lade komplette History
+        history = load_memory()
+
+        # Speichere neue User-Eingabe mit used=False
+        save_memory("user", user, used=False)
         history.append({"timestamp": datetime.datetime.utcnow().isoformat(), "role": "user", "content": user, "used": False})
 
         # Trenne schon beantwortete (used=True) Nachrichten (egal Rolle)
