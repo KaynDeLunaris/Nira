@@ -3,13 +3,11 @@
 Ein schlankes, lokal laufendes Sprachmodell (TinyLLaMA 1.1 B) auf Basis von llama.cpp, das auf einem Raspberry Pi 5 in Echtzeit antwortet.  
 Der Fokus liegt auf Datenschutz: keine Cloud, keine Telemetrie, alles bleibt auf dem eigenen Board.
 
-> Dieses Projekt entstand in einem Dialog mit einer KI und steht unter MIT-Lizenz.
-
 ## Funktionen
-- Text- und Sprach-Chat (über USB-Mikrofon & Lautsprecher)  
-- Persistentes Langzeit-Gedächtnis im JSONL-Format  
-- Automatische tägliche Backups (Cron-Skript)  
-- Modular erweiterbar (Kamera, Servos, ROS2-Node …)
+- Text- und Sprach-Chat (Deutsch, USB-Mikrofon & Lautsprecher)
+- Persistentes Langzeit-Gedächtnis (JSONL)
+- Tägliche Backups via Cron
+- Modular erweiterbar (Kamera, Servos, ROS 2 …)
 
 ## Schnellstart
 1. Raspberry Pi OS Lite (64-bit) auf SD-Karte flashen.  
